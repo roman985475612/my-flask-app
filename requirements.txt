@@ -1,6 +1,14 @@
 click==7.1.2
+dnspython==2.0.0
+email-validator==1.1.1
 Flask==1.1.2
+Flask-MySQLdb==0.2.0
+Flask-WTF==0.14.3
+idna==2.10
 itsdangerous==1.1.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
+mysqlclient @ file:///C:/Users/%D0%A0%D0%BE%D0%BC%D0%B0%D0%BD/MyProjects/Python/Flask/myflaskapp/mysqlclient-1.4.6-cp38-cp38-win32.whl
+passlib==1.7.2
 Werkzeug==1.0.1
+WTForms==2.3.3
