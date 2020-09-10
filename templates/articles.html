@@ -2,15 +2,21 @@
 
 {% block body %}
   <h1 class="display-6">Статьи</h1>
-  {% for article in articles %}
-    <div class="card mb-3">
-      <div class="card-header">{{ article.author }}</div>
-      <div class="card-body">
-        <h5 class="card-title">{{ article.title }}</h5>
-        <p class="card-text">{{ article.body }}</p>
-        <a href="/article/{{ article.id }}" class="btn btn-primary">Далее...</a>
+  <div class="row">
+    {% for article in articles %}
+      <div class="col-md-4">
+        <div class="card mb-3">
+          <div class="card-header">{{ article.author }}</div>
+          <div class="card-body">
+            <h5 class="card-title">{{ article.title }}</h5>
+            <p class="card-text">{{ article.body }}</p>
+            <a href="{{ url_for('article', id=article.id) }}" class="btn btn-primary">Далее...</a>
+          </div>
+          <div class="card-footer text-muted">{{ article.created_at }}</div>
+        </div>
       </div>
-      <div class="card-footer text-muted">{{ article.created_at }}</div>
-    </div>
-  {% endfor %}
+    {% else %}
+      Статей нет...
+    {% endfor %}
+  </div>
 {% endblock %}

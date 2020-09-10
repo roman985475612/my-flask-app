@@ -1,5 +1,3 @@
-from functools import wraps
-
 from flask import Flask
 from flask import flash
 from flask import redirect
@@ -9,15 +7,13 @@ from flask import session
 from flask import logging
 from flask import render_template
 from flask_mysqldb import MySQL
-from wtforms import Form, StringField, TextAreaField, PasswordField
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import Length, Email, EqualTo, DataRequired
 
 import email_validator
 
 from passlib.hash import sha256_crypt
 
-import data
+from functions import is_logged_in
+from forms import RegisterForm, LoginForm, ArticleForm
 
 app = Flask(__name__)
 app.secret_key = 'asdfdfalkjl'
@@ -30,8 +26,8 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
 
-@app.route('/')
 @app.route('/index')
+@app.route('/')
 def index():
     return render_template('index.html')
 
@@ -43,29 +39,63 @@ def about():
 
 @app.route('/articles')
 def articles():
-    articles = data.articles()
-    return render_template('articles.html', articles=articles)
+    cur = mysql.connection.cursor()
+    query = "SELECT * FROM articles"
+    result = cur.execute(query)
+    data = {}
+    if result > 0:
+        data = cur.fetchall()
+    return render_template('articles.html', articles=data)
 
 
-@app.route('/article/<int:id>')
+@app.route('/articles/<int:id>')
 def article(id):
-    article = data.articles()[id-1]
-    return render_template('article.html', article=article)
+    cur = mysql.connection.cursor()
+    query = "SELECT * FROM articles WHERE id=%s"
+    result = cur.execute(query, [id])
+    data = {}
+    if result > 0:
+        data = cur.fetchone()
+    return render_template('article.html', article=data)
 
 
-class RegisterForm(Form):
-    name = StringField('Имя', [Length(min=1, max=50)])
-    username = StringField('Имя пользователя', [Length(min=4, max=25)])
-    email = EmailField('Email', [Email()])
-    password = PasswordField('Пароль', [DataRequired(), EqualTo('confirm', message='Passwords do not match')])
-    confirm = PasswordField('Подтверждение пароля')
+@app.route('/articles/create', methods=['GET', 'POST'])
+@is_logged_in
+def article_create():
+    form = ArticleForm(request.form)
+    if request.method == 'POST' and form.validate():
+        cur = mysql.connection.cursor()
+        mysql.connection.autocommit(on=True)
+        query = "INSERT INTO articles(title, body, author) VALUES(%s, %s, %s)"
+        params = (
+            form.title.data,
+            form.body.data,
+            session['username']
+        )
+        cur.execute(query, params)
+        cur.close()
+        flash('Статья добавлена', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('article-create.html', form=form)
+
+
+@app.route('/articles/<int:id>/update', methods=['GET', 'POST'])
+@is_logged_in
+def article_update(id):
+    pass
+
+
+@app.route('/articles/<int:id>/delete', methods=['GET', 'POST'])
+@is_logged_in
+def article_delete(id):
+    pass
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
     if request.method == 'POST' and form.validate():
-        print('!!! form validate')
         cur = mysql.connection.cursor()
         query = "INSERT INTO users(name, email, username, password) VALUES(%s, %s, %s, %s)"
         params = (
@@ -86,11 +116,6 @@ def register():
         return redirect(url_for('index'))
 
     return render_template('register.html', form=form)
-
-
-class LoginForm(Form):
-    username = StringField('Имя пользователя', [Length(min=4, max=25)])
-    password = PasswordField('Пароль', [DataRequired()])
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -129,6 +154,7 @@ def login():
 
 
 @app.route('/logout')
+@is_logged_in
 def logout():
     name = session['name']
     session.clear()
@@ -136,21 +162,16 @@ def logout():
     return redirect(url_for('index'))
 
 
-def is_logged_in(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if 'logged_in' in session:
-            return f(*args, **kwargs)
-        else:
-            flash('Вам необходима войти!', 'danger')
-            return redirect(url_for('login'))
-    return wrap
-
-
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
-    return render_template('dashboard.html')
+    cur = mysql.connection.cursor()
+    query = "SELECT * FROM articles"
+    result = cur.execute(query)
+    data = {}
+    if result > 0:
+        data = cur.fetchall()
+    return render_template('dashboard.html', articles=data)
 
 
 if __name__ == '__main__':

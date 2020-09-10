@@ -4,5 +4,10 @@
   <div class="bg-light text-center mt-1 p-5">
     <h1 class="display-4">Приложение на Flask!</h1>
     <p class="lead">Это приложение создано с использованием фреймворка Flask</p>
+    {% if session.logged_in == NULL %}
+      <hr>
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Регистрация</a>
+      <a href="{{ url_for('login') }}" class="btn btn-success btn-lg">Вход</a>
+    {% endif %}
   </div>
 {% endblock %}
