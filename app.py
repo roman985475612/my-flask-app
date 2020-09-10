@@ -4,11 +4,11 @@ from flask import redirect
 from flask import request
 from flask import url_for
 from flask import session
-from flask import logging
+# from flask import logging
 from flask import render_template
 from flask_mysqldb import MySQL
 
-import email_validator
+# import email_validator
 
 from passlib.hash import sha256_crypt
 
@@ -25,6 +25,7 @@ app.config['MYSQL_DB'] = 'myflaskapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
+
 
 @app.route('/index')
 @app.route('/')
@@ -48,14 +49,15 @@ def articles():
     return render_template('articles.html', articles=data)
 
 
-@app.route('/articles/<int:id>')
-def article(id):
+@app.route('/articles/<int:article_id>')
+def article(article_id):
     cur = mysql.connection.cursor()
     query = "SELECT * FROM articles WHERE id=%s"
-    result = cur.execute(query, [id])
+    result = cur.execute(query, [article_id])
     data = {}
     if result > 0:
         data = cur.fetchone()
+    cur.close()
     return render_template('article.html', article=data)
 
 
@@ -77,19 +79,53 @@ def article_create():
         flash('Статья добавлена', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('article-create.html', form=form)
+    return render_template('article-create.html', form=form, header='Добавление')
 
 
-@app.route('/articles/<int:id>/update', methods=['GET', 'POST'])
+@app.route('/articles/<int:article_id>/update', methods=['GET', 'POST'])
 @is_logged_in
-def article_update(id):
-    pass
+def article_update(article_id):
+    cur = mysql.connection.cursor()
+    query = "SELECT * FROM articles WHERE id=%s"
+    result = cur.execute(query, [article_id])
+    article = {}
+    if result > 0:
+        article = cur.fetchone()
+    cur.close()
+
+    form = ArticleForm(request.form)
+
+    if request.method == 'GET':
+        form.title.data = article['title']
+        form.body.data = article['body']
+    elif request.method == 'POST' and form.validate():
+        cur = mysql.connection.cursor()
+        mysql.connection.autocommit(on=True)
+        query = """ UPDATE articles 
+                    SET title=%s, body=%s 
+                    WHERE id=%s """
+        params = (
+            form.title.data,
+            form.body.data,
+            article_id
+        )
+        cur.execute(query, params)
+        cur.close()
+        flash('Статья обновлена', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('article-create.html', form=form, header='Редактирование')
 
 
-@app.route('/articles/<int:id>/delete', methods=['GET', 'POST'])
+@app.route('/articles/<int:article_id>/delete', methods=['GET', 'POST'])
 @is_logged_in
-def article_delete(id):
-    pass
+def article_delete(article_id):
+    cur = mysql.connection.cursor()
+    mysql.connection.autocommit(on=True)
+    cur.execute("DELETE FROM articles WHERE id=%s", [article_id])
+    cur.close()
+    flash('Статья удалена', 'success')
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/register', methods=['GET', 'POST'])

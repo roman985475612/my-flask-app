@@ -22,12 +22,35 @@
         <td>{{ article.author }}</td>
         <td>{{ article.created_at }}</td>
         <td>
-          <a href="{{ url_for('article', id=article.id) }}" class="btn btn-outline-info">edit</a>
-          <a href="{{ url_for('article_update', id=article.id) }}" class="btn btn-outline-warning">edit</a>
-          <a href="{{ url_for('article_delete', id=article.id) }}" class="btn btn-outline-danger">delete</a>
+          <a href="{{ url_for('article', article_id=article.id) }}" class="btn btn-outline-info">Просмотреть</a>
+          <a href="{{ url_for('article_update', article_id=article.id) }}" class="btn btn-outline-warning">Изменить</a>
+          <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#mod{{article.id}}">
+            Удалить
+          </button>
+          <div class="modal fade" id="mod{{article.id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Удаление статьи #{{ article.id }}</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <p>Вы уверены, что хотите удалить статью?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  <a href="{{ url_for('article_delete', article_id=article.id) }}" class="btn btn-primary">Удалить</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
+
+
 {% endblock %}

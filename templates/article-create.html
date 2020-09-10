@@ -1,11 +1,11 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-  <h1 class="display-6">Добавление статьи</h1>
+  <h1 class="display-6">{{ header }}</h1>
   {% from 'includes/_formhelpers.html' import render_field %}
   <form method="POST" action="">
     {{ render_field(form.title) }}
     {{ render_field(form.body, id="editor") }}
-    <button type="submit" class="btn btn-primary">Добавить</button>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
   </form>
 {% endblock %}
