@@ -1,5 +1,7 @@
 {% extends 'layout.html' %}
 
+{% block title %}{{ article.title }} | {{ super() }}{% endblock %}
+
 {% block body %}
   <div class="card text-center">
     <div class="card-header">{{ article.author }}</div>

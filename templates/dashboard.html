@@ -1,5 +1,7 @@
 {% extends 'layout.html' %}
 
+{% block title %}Панель управления | {{ super() }}{% endblock %}
+
 {% block body %}
   <h1 class="display-6">Панель управления</h1>
   <a href="{{ url_for('article_create') }}" class="btn btn-outline-success">Добавить статью</a>
@@ -23,7 +25,7 @@
         <td>{{ article.created_at }}</td>
         <td>
           <a href="{{ url_for('article', article_id=article.id) }}" class="btn btn-outline-info">Просмотреть</a>
-          <a href="{{ url_for('article_update', article_id=article.id) }}" class="btn btn-outline-warning">Изменить</a>
+          <a href="{{ url_for('article_update', article_id=article.id) }}" class="btn btn-outline-warning">Редактировать</a>
           <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#mod{{article.id}}">
             Удалить
           </button>
